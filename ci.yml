@@ -1,18 +1,66 @@
 name: CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+push:
+branches: \[main]
+pull\_request:
+branches: \[main]
+
+concurrency:
+group: CI-\${{ github.ref }}-\${{ github.workflow }}
+cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-      - run: npm install
-      - run: npm test
+build-and-test:
+name: Build, Lint & Test
+runs-on: ubuntu-latest
+steps:
+\- name: Checkout repository
+uses: actions/checkout\@v3
+
+```
+  - name: Setup Node.js
+    uses: actions/setup-node@v3
+    with:
+      node-version: 18
+      cache: 'npm'
+
+  - name: Install dependencies
+    run: npm ci --prefer-offline --no-audit --progress=false
+
+  - name: Run ESLint
+    run: npm run lint
+
+  - name: Run tests with coverage
+    run: npm test -- --coverage
+
+  - name: Audit dependencies
+    run: npm audit --audit-level=high
+
+  - name: Upload coverage report
+    if: success() && github.event_name != 'pull_request'
+    uses: codecov/codecov-action@v3
+    with:
+      token: ${{ secrets.CODECOV_TOKEN }}
+```
+
+codeql-analysis:
+name: CodeQL Security Scan
+needs: build-and-test
+runs-on: ubuntu-latest
+steps:
+\- name: Checkout repository
+uses: actions/checkout\@v3
+
+```
+  - name: Initialize CodeQL
+    uses: github/codeql-action/init@v2
+    with:
+      languages: javascript
+
+  - name: Autobuild
+    uses: github/codeql-action/autobuild@v2
+
+  - name: Perform CodeQL Analysis
+    uses: github/codeql-action/analyze@v2
+```
