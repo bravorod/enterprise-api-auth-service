@@ -1,3 +1,6 @@
+// controllers/auditController.js
+// Audit controller: manages audit log operations including listing, retrieval, deletion, and recording of events.
+
 const AuditLog = require('../models/AuditLog');
 
 /**
