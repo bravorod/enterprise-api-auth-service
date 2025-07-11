@@ -37,11 +37,12 @@ uses: actions/checkout\@v3
   - name: Audit dependencies
     run: npm audit --audit-level=high
 
-  - name: Upload coverage report
+  - name: Upload coverage report to Codecov
     if: success() && github.event_name != 'pull_request'
     uses: codecov/codecov-action@v3
     with:
       token: ${{ secrets.CODECOV_TOKEN }}
+      flags: unittests
 ```
 
 codeql-analysis:
