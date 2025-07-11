@@ -4,7 +4,7 @@
 </h1>
 
 <p align="center">
-A Node.js backend for secure, scalable REST APIs with JWT authentication, role-based access control, health checks, and real-time metrics
+Node.js REST API backend with JWT auth, RBAC, health checks, and real-time metrics
 </p>
 
 
