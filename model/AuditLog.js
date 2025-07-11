@@ -10,7 +10,7 @@ const { Schema } = mongoose;
  */
 const AuditLogSchema = new Schema(
   {
-    /** ID of the user performing the action (if applicable) */
+    /** ID of the user performing the action */
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
