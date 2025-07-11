@@ -1,22 +1,58 @@
 {
-    "name": "booklog",
-    "version": "1.0.0",
-    "description": "System where users can login and personalize their book lists.",
-    "main": "main.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "nodemon main.js"
-    },
-    "author": "Rodrigo Bravo",
-    "license": "ISC",
-    "dependencies": {
-        "bcrypt": "^5.0.1",
-        "cookie-parser": "^1.4.6",
-        "cors": "^2.8.5",
-        "express": "^4.17.2",
-        "jsonwebtoken": "^8.5.1",
-        "mongoose": "^6.1.7",
-        "mongoose-type-email": "^1.1.2",
-        "nodemon": "^2.0.15"
-    }
+  "name": "enterprise-api-auth-service",
+  "version": "1.0.0",
+  "description": "Enterprise‐grade Node.js REST API with JWT auth, RBAC, health checks & Prometheus metrics",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bravorod/enterprise-api-auth-service.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bravorod/enterprise-api-auth-service/issues"
+  },
+  "homepage": "https://github.com/bravorod/enterprise-api-auth-service#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "lint": "eslint \"**/*.js\"",
+    "test": "jest --coverage",
+    "docs": "node scripts/generate-swagger.js",
+    "metrics": "node scripts/metrics-server.js"
+  },
+  "author": "Rodrigo Bravo <bravorod.data@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "helmet": "^6.0.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.9.1",
+    "morgan": "^1.10.0",
+    "prom-client": "^14.0.1",
+    "swagger-ui-express": "^4.6.3",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "codecov": "^3.2.3",
+    "eslint": "^8.46.0",
+    "jest": "^29.2.1",
+    "nodemon": "^2.0.22",
+    "supertest": "^6.4.4"
+  },
+  "files": [
+    "index.js",
+    "config.js",
+    "routes/",
+    "models/",
+    "docs/",
+    "scripts/"
+  ]
 }
