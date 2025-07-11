@@ -1,10 +1,19 @@
-// Centralized configuration 
+/**
+ * config.js
+ *
+ * Centralized configuration - All settings are driven by environment variables with sensible defaults.
+ */
 
 require('dotenv').config();
 
+const parseNumber = (value, fallback) => {
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
 module.exports = {
   app: {
-    port: parseInt(process.env.PORT, 10) || 3000,
+    port: parseNumber(process.env.PORT, 3000),
     env: process.env.NODE_ENV || 'development'
   },
 
@@ -24,15 +33,15 @@ module.exports = {
   },
 
   rateLimit: {
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000, // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 100,
+    windowMs: parseNumber(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
+    max: parseNumber(process.env.RATE_LIMIT_MAX, 100),
     message: process.env.RATE_LIMIT_MESSAGE || 'Too many requests, please try again later.'
   },
 
   jwt: {
     secret: process.env.JWT_SECRET || 'your_jwt_secret_key',
     expiresIn: process.env.JWT_EXPIRES_IN || '1h',
-    cookieExpireDays: parseInt(process.env.COOKIE_EXPIRE_DAYS, 10) || 7
+    cookieExpireDays: parseNumber(process.env.COOKIE_EXPIRE_DAYS, 7)
   },
 
   swagger: {
@@ -43,6 +52,6 @@ module.exports = {
   prometheus: {
     httpDurationBuckets: (process.env.PROM_HTTP_BUCKETS || '50,100,200,300,400,500,1000')
       .split(',')
-      .map(Number)
+      .map((v) => parseNumber(v.trim(), 0))
   }
 };
