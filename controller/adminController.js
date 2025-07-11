@@ -1,3 +1,6 @@
+// controllers/adminController.js
+// Admin controller: provides administrative operations for listing users, updating roles, and toggling account status.
+
 const User = require('../models/User');
 
 /**
