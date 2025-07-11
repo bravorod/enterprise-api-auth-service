@@ -1,89 +1,126 @@
-# Secure API Backend
 
-A secure and scalable Node.js backend application providing RESTful APIs with full authentication, authorization, and database connectivity. Built with Express, MongoDB, and JSON Web Tokens (JWT), this backend is designed to support full-stack web applications requiring protected user data and role-based access control.
+<h1 align="center">
+  Enterprise API Auth Service
+</h1>
 
----
+<p align="center">
+A Node.js backend for secure, scalable REST APIs with JWT authentication, role-based access control, health checks, and real-time metrics
+</p>
 
-## Features
 
-- Full RESTful API architecture
-- JWT-based authentication and authorization
-- CRUD operations on protected resources
-- Secure password hashing with bcrypt
-- Cookie-based token storage (HTTP-only)
-- User role management and protected routes
-- Modular routing and middleware structure
-- Schema-based data modeling using Mongoose
-- API tested with Postman
+<p align="center">
+  <img src="docs/architecture_api.png" alt="Architecture Diagram" width="600">
+</p>
 
----
 
-## Technologies Used
 
-- **Node.js** – Server runtime environment
-- **Express.js** – HTTP routing and middleware
-- **MongoDB** – NoSQL database
-- **Mongoose** – Object Data Modeling (ODM)
-- **JWT (jsonwebtoken)** – Stateless authentication
-- **bcryptjs** – Secure password hashing
-- **Postman** – API testing and validation
 
----
 
-## Getting Started
+## Key Features
 
-### Prerequisites
+- Rate limiting to prevent brute-force attacks
+- Health checks (`/healthz`, `/readyz`) for Kubernetes probes
+- OpenAPI (Swagger) documentation at `/docs`
+- Prometheus metrics endpoint (`/metrics`) for real-time monitoring
+- Full RESTful API with versioning (`/v1/*`, `/v2/*`)
+- JWT-based stateless authentication & authorization
+- Role-based access control (RBAC) with hierarchical permissions
+- Secure password hashing (bcrypt, argon2)
+- HTTP-only cookies and token refresh endpoints
+- Docker & Docker Compose for one-command local setup
+- CI/CD examples (GitHub Actions, Jenkins)
 
-- Node.js (v18+)
-- MongoDB instance
-- Postman
 
-### Installation
+## Quickstart
 
 ```bash
-git clone https://github.com/bravorod/secure-api-backend.git
-cd secure-api-backend
-npm install
+cp .env.example .env   # configure MONGO_URI, JWT_SECRET, COOKIE_EXPIRE_DAYS, RATE_LIMIT
+docker-compose up --build -d
 ```
 
-### Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-
-```
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/mydatabase
-JWT_SECRET=your_jwt_secret_key
-COOKIE_EXPIRE_DAYS=7
-```
-
----
-
-## Running the Server
+### Authentication Flow
 
 ```bash
-npm start
+# Register a user
+curl -X POST http://localhost:5000/v1/auth/register \
+     -H 'Content-Type: application/json' \
+     -d '{"email":"email@example.com","password":"P@ssw0rd"}'
+
+# Login and capture token
+TOKEN=$(curl -s -X POST http://localhost:5000/v1/auth/login \
+    -H 'Content-Type: application/json' \
+    -d '{"email":"email@example.com","password":"P@ssw0rd"}' \
+    | jq -r .token)
+
+# Access protected resource
+curl -H "Authorization: Bearer $TOKEN" http://localhost:5000/v1/data/profile
 ```
 
----
+## Security & Compliance
+* Passwords hashed with bcrypt (12+ rounds) or argon2
 
-## Endpoints
+* JWT signed with 256-bit secret; configurable expiration
 
-* `POST /api/auth/register` – Register a new user
-* `POST /api/auth/login` – Authenticate user and return JWT
-* `GET /api/users/me` – Get current authenticated user
-* `GET /api/data` – Access protected resource
+* CSRF protection via double-submit cookie
 
-All protected routes require a valid JWT token (sent via HTTP-only cookie or Authorization header).
+* Rate limiting: default 100 requests/min per IP
 
----
+* Audit logs for login attempts and role changes
 
-## Testing
+* Data encryption at rest (MongoDB encryption) and in transit (TLS/HTTPS)
 
-All routes are fully testable via Postman.
+## Performance & Monitoring
+* Expose Prometheus metrics: response times, error rates, request counts
 
----
+* Grafana dashboards pre-configured under monitoring/
+
+* Stress-test results: average RPS, 95th-percentile latencies
+
+* Kubernetes HPA sample spec for auto-scaling
+
+## Deployment
+
+### Kubernetes
+Helm chart available under charts/ with prod and staging values.
+
+### Docker Compose
+```yaml
+version: '3.8'
+services:
+  auth-service:
+    build: .
+    ports: ['5000:5000']
+    env_file: [.env]
+  mongo:
+    image: mongo:5.0
+    volumes: [mongo-data:/data/db]
+  prometheus:
+    image: prom/prometheus
+    volumes: ['./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml']
+  grafana:
+    image: grafana/grafana
+    ports: ['3000:3000']
+volumes:
+  mongo-data:
+```
+
+## Advanced Configuration
+* Multi-tenant support via TENANT_ID header parsing
+
+* GraphQL gateway option at /graphql (Apollo Server)
+
+* Dynamic CORS origin whitelist in config.js
+
+* Custom middleware hooks for logging or tracing
+
+
+## Contributing
+
+* OAuth2 / OpenID Connect support
+
+* Grafana rate-limit dashboards
+
+* Redis token blacklisting store
 
 ## License
-
-This project is licensed under the MIT License.
+MIT License © Rodrigo Bravo
