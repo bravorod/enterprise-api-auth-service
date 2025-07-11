@@ -1,3 +1,6 @@
+// controllers/userController.js
+// User controller: retrieves and updates the authenticated user’s profile.
+
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
