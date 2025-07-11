@@ -1,3 +1,6 @@
+// controllers/healthController.js
+// Health controller: implements liveness and readiness endpoints for service health checks.
+
 /**
  * Health check endpoints for Kubernetes probes.
  */
