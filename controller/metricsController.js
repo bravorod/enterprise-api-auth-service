@@ -1,3 +1,6 @@
+// controllers/metricsController.js
+// Metrics controller: exposes Prometheus metrics for monitoring and observability.
+
 const promClient = require('prom-client');
 
 /**
