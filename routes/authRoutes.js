@@ -1,26 +1,36 @@
 // routes/authRoutes.js
+// Authentication endpoints for the enterprise API auth service
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const User = require('../models/User');
 const { promisify } = require('util');
+const User = require('../models/User');
 const config = require('../config');
 
 const router = express.Router();
 
-// Register
+/**
+ * POST /v1/auth/register
+ * Create a new user account with hashed password and default roles.
+ * Public access.
+ */
 router.post('/v1/auth/register', async (req, res, next) => {
   try {
     const { email, password, roles = ['user'] } = req.body;
-    const hashed = await bcrypt.hash(password, 12);
-    const user = await User.create({ email, password: hashed, roles });
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const user = await User.create({ email, password: hashedPassword, roles });
     res.status(201).json({ id: user.id, email: user.email });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 });
 
-// Login
+/**
+ * POST /v1/auth/login
+ * Authenticate user credentials, issue JWT, and set HTTP-only cookie.
+ * Public access.
+ */
 router.post('/v1/auth/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -28,36 +38,63 @@ router.post('/v1/auth/login', async (req, res, next) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    const token = jwt.sign({ sub: user.id, roles: user.roles }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
+
+    const payload = { sub: user.id, roles: user.roles };
+    const token = jwt.sign(payload, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
+
     res.cookie('jid', token, {
       httpOnly: true,
-      maxAge: config.jwt.cookieExpireDays * 24 * 60 * 60 * 1000,
       secure: config.app.env === 'production',
-      sameSite: 'lax'
+      sameSite: 'lax',
+      maxAge: config.jwt.cookieExpireDays * 24 * 60 * 60 * 1000
     });
+
     res.json({ token });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 });
 
-// Refresh Token
+/**
+ * POST /v1/auth/refresh
+ * Refresh an existing JWT using the cookie or Authorization header.
+ * Public access (requires valid token).
+ */
 router.post('/v1/auth/refresh', async (req, res, next) => {
   try {
     const token = req.cookies.jid || req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'No token provided' });
-    const payload = await promisify(jwt.verify)(token, config.jwt.secret);
-    const newToken = jwt.sign({ sub: payload.sub, roles: payload.roles }, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
-    res.cookie('jid', newToken, { httpOnly: true });
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = await promisify(jwt.verify)(token, config.jwt.secret);
+    const newToken = jwt.sign(
+      { sub: decoded.sub, roles: decoded.roles },
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn }
+    );
+
+    res.cookie('jid', newToken, {
+      httpOnly: true,
+      secure: config.app.env === 'production',
+      sameSite: 'lax',
+      maxAge: config.jwt.cookieExpireDays * 24 * 60 * 60 * 1000
+    });
+
     res.json({ token: newToken });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 });
 
-// Logout
+/**
+ * POST /v1/auth/logout
+ * Clear the authentication cookie to log out the user.
+ * Public access.
+ */
 router.post('/v1/auth/logout', (req, res) => {
-  res.clearCookie('jid').status(200).json({ message: 'Logged out' });
+  res.clearCookie('jid');
+  res.status(200).json({ message: 'Logged out successfully' });
 });
 
 module.exports = router;
