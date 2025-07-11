@@ -1,3 +1,6 @@
+// controllers/authController.js
+// Authentication controller: handles user registration, login, token refresh, and logout.
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { promisify } = require('util');
